@@ -35,9 +35,10 @@ const Utama = ({ navigation }) => {
       {dataQuran.map((item, index) => (
         <TouchableOpacity
           key={index}
-          onPress={() => navigation.navigate('Detil', { NoSurat: item.nomor })}
+          onPress={() => navigation.navigate('Detil', { NoSurat: item.nomor, NamaSurat: item.nama })}
           style={styles.suratContainer}
         >
+          <Text style={styles.nomorSurat}>{item.nomor}.</Text>
           <Text style={styles.teks}>
             {item.nama} ({item.namaLatin})
           </Text>
@@ -53,9 +54,16 @@ const styles = StyleSheet.create({
   teks: {
     fontSize: 24,
   },
+  nomorSurat: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 10,
+  },
   suratContainer: {
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });

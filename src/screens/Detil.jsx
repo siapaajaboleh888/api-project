@@ -1,15 +1,18 @@
 import { StyleSheet, Text, ScrollView, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
+import Sound from 'react-native-sound';
+
 
 const Detil = ({ route }) => {
   const { NoSurat } = route.params;
   const [dataQuran, setDataQuran] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [fontSize, setFontSize] = useState(16);
 
   const ambilData = async () => {
     try {
-      const respon = await fetch(`https://equran.id/api/v2/surat/${NoSurat}`); // Perbaikan di sini
+      const respon = await fetch(`https://equran.id/api/v2/surat/${NoSurat}`);
       const dataJson = await respon.json();
       setDataQuran(dataJson.data.ayat);
     } catch (error) {
@@ -23,6 +26,24 @@ const Detil = ({ route }) => {
     ambilData();
   }, []);
 
+  const increaseFontSize = () => {
+    setFontSize(fontSize + 2);
+  };
+
+  const decreaseFontSize = () => {
+    setFontSize(fontSize - 2);
+  };
+
+  const playAudio = (audioUrl) => {
+    const sound = new Sound(audioUrl, '', (error) => {
+      if (error) {
+        console.log('Gagal memuat audio', error);
+        return;
+      }
+      sound.play();
+    });
+  };
+
   if (isLoading) {
     return <Text>Memuat data...</Text>;
   }
@@ -32,18 +53,34 @@ const Detil = ({ route }) => {
   }
 
   return (
-    <ScrollView>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.buttonContainer}>
+        <Text style={styles.buttonText} onPress={decreaseFontSize}>
+          -
+        </Text>
+        <Text style={styles.buttonText} onPress={increaseFontSize}>
+          +
+        </Text>
+      </View>
       {dataQuran.length > 0 ? (
         dataQuran.map((item, i) => {
           return (
             <View style={styles.ayatContainer} key={i}>
-              <Text style={styles.teksArab}>{item.teksArab}</Text>
-              <Text style={styles.teksIndonesia}>{item.teksIndonesia}</Text>
+              <View style={styles.nomorAyatContainer}>
+                <Text style={[styles.nomorAyat, { fontSize }]}>{item.nomorAyat}.</Text>
+              </View>
+              <View style={styles.teksContainer}>
+                <Text style={[styles.teksArab, { fontSize }]}>{item.teksArab}</Text>
+                <Text style={[styles.teksIndonesia, { fontSize }]}>{item.teksIndonesia}</Text>
+                <Text style={styles.audioButton} onPress={() => playAudio(item.audioUrl)}>
+                  Putar Audio
+                </Text>
+              </View>
             </View>
           );
         })
       ) : (
-        <Text>Tidak ada data ditemukan.</Text>
+        <Text style={[styles.noDataText, { fontSize }]}>Tidak ada data ditemukan.</Text>
       )}
     </ScrollView>
   );
@@ -52,17 +89,53 @@ const Detil = ({ route }) => {
 export default Detil;
 
 const styles = StyleSheet.create({
+  container: {
+    paddingVertical: 16,
+  },
   ayatContainer: {
-    marginVertical: 10,
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  nomorAyatContainer: {
+    marginRight: 16,
+    alignSelf: 'flex-start',
+  },
+  nomorAyat: {
+    fontWeight: 'bold',
+  },
+  teksContainer: {
+    flex: 1,
   },
   teksArab: {
-    fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'right',
+    marginBottom: 8,
   },
   teksIndonesia: {
-    fontSize: 16,
     textAlign: 'left',
+  },
+  noDataText: {
+    textAlign: 'center',
+    padding: 16,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  buttonText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginHorizontal: 16,
+    padding: 8,
+    backgroundColor: '#ccc',
+    borderRadius: 4,
+  },
+  audioButton: {
+    color: 'blue',
+    textDecorationLine: 'underline',
+    marginTop: 8,
   },
 });
